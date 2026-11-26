@@ -154,6 +154,12 @@ git clone --depth=1 -b packages-25.12 https://github.com/sbwml/feeds_packages_la
 git clone https://github.com/QiuSimons/FlowCone package/FlowCone
 git clone https://github.com/muink/luci-app-natmapt package/luci-app-natmapt
 git clone https://github.com/muink/openwrt-natmapt package/natmapt
+FLOWCONE_MK="package/FlowCone/openwrt/flowcone/Makefile"
+if [ -f "$FLOWCONE_MK" ]; then
+    sed -i 's/LINKER="$(TARGET_CC)"/LINKER="$(TARGET_CROSS)gcc"/g' "$FLOWCONE_MK"
+    sed -i 's/CC_$(RUST_TARGET_UPPER)="$(TARGET_CC)"/CC_$(RUST_TARGET_UPPER)="$(TARGET_CROSS)gcc"/g' "$FLOWCONE_MK"
+    sed -i 's/CXX_$(RUST_TARGET_UPPER)="$(TARGET_CXX)"/CXX_$(RUST_TARGET_UPPER)="$(TARGET_CROSS)g++"/g' "$FLOWCONE_MK"
+fi
 # 添加taskplan定时设置插件
 #git_sparse_clone main https://github.com/sirpdboy/luci-app-taskplan luci-app-taskplan
 # 添加设备关机功能
