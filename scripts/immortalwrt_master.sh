@@ -154,11 +154,13 @@ git clone --depth=1 -b packages-25.12 https://github.com/sbwml/feeds_packages_la
 git clone https://github.com/QiuSimons/FlowCone package/FlowCone
 git clone https://github.com/muink/luci-app-natmapt package/luci-app-natmapt
 git clone https://github.com/muink/openwrt-natmapt package/natmapt
+# 修复 FlowCone 在开启 CONFIG_CCACHE=y 时 Rust 链接器带空格报错的问题
 FLOWCONE_MK="package/FlowCone/openwrt/flowcone/Makefile"
 if [ -f "$FLOWCONE_MK" ]; then
     sed -i 's/LINKER="$(TARGET_CC)"/LINKER="$(TARGET_CROSS)gcc"/g' "$FLOWCONE_MK"
     sed -i 's/CC_$(RUST_TARGET_UPPER)="$(TARGET_CC)"/CC_$(RUST_TARGET_UPPER)="$(TARGET_CROSS)gcc"/g' "$FLOWCONE_MK"
     sed -i 's/CXX_$(RUST_TARGET_UPPER)="$(TARGET_CXX)"/CXX_$(RUST_TARGET_UPPER)="$(TARGET_CROSS)g++"/g' "$FLOWCONE_MK"
+    echo "✅ 已成功修复 FlowCone Makefile 的交叉编译链接器路径"
 fi
 # 添加taskplan定时设置插件
 #git_sparse_clone main https://github.com/sirpdboy/luci-app-taskplan luci-app-taskplan
