@@ -1,3 +1,7 @@
+#!/bin/bash
+
+cat << 'EOF' > /tmp/git_sparse_clone
+#!/bin/bash
 # 增强版稀疏克隆函数 (参数1是分支名, 参数2是仓库地址, 参数3是子目录，同一个仓库下载多个文件夹直接在后面跟文件名或路径，空格分开)
 function git_sparse_clone() {
   local branch=""
@@ -70,4 +74,12 @@ function git_sparse_clone() {
   cd .. && rm -rf "$repodir"
   echo ">> 任务结束。"
 }
-# 增强版稀疏克隆 end
+
+git_sparse_clone "$@"
+EOF
+
+sudo install -m 0755 /tmp/git_sparse_clone /usr/local/bin/git_sparse_clone
+rm -f /tmp/git_sparse_clone
+echo "✅ 已生成全局命令: /usr/local/bin/git_sparse_clone"
+
+# 增强版稀疏克隆end
