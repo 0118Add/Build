@@ -1,4 +1,5 @@
         # --- 整合 QiuSimons/luci-app-honk 的宿主机编译环境依赖 ---
+        set -e
         echo "🔧 正在搜索并配置 luci-app-honk 所需的宿主机工具链..."
         
         # 1. 安装 Rust 环境（如果尚未安装）
