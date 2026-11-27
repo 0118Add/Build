@@ -24,7 +24,7 @@ rm -rf feeds/packages/net/dae
 rm -rf feeds/luci/applications/luci-app-daed
 rm -rf feeds/packages/net/daed
 rm -rf feeds/packages/utils/coremark
-rm -rf feeds/packages/lang/node/node
+#rm -rf feeds/packages/lang/node/node
 #rm -rf feeds/packages/lang/golang
 rm -rf feeds/packages/net/{xray-core,v2ray-geodata,sing-box,chinadns-ng,dns2socks,hysteria,ipt2socks,microsocks,naiveproxy,shadowsocks-libev,shadowsocks-rust,shadowsocksr-libev,simple-obfs,tcping,trojan-plus,tuic-client,v2ray-plugin,xray-plugin,geoview,shadow-tls}
 #rm -rf feeds/luci/applications/luci-app-netdata
@@ -149,7 +149,7 @@ git_sparse_clone main https://github.com/Openwrt-Passwall/openwrt-passwall-packa
 # 添加partexp
 git clone --depth=1 -b main https://github.com/sirpdboy/luci-app-partexp package/partexp
 # 预编译 node
-git clone --depth=1 -b packages-25.12 https://github.com/sbwml/feeds_packages_lang_node-prebuilt feeds/packages/lang/node/node
+#git clone --depth=1 -b packages-25.12 https://github.com/sbwml/feeds_packages_lang_node-prebuilt feeds/packages/lang/node/node
 # 添加FlowCone
 git clone https://github.com/QiuSimons/FlowCone package/FlowCone
 git clone https://github.com/muink/luci-app-natmapt package/luci-app-natmapt
