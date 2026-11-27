@@ -44,11 +44,29 @@
           echo "${BPF_LINKER_SHA256}  /tmp/bpf-linker.tar.zst" | sha256sum -c -
           sudo tar --zstd -xf /tmp/bpf-linker.tar.zst -C /usr/local/bin
           
-          # 安装 Zig 编译器
+          # 安装 Zig 编译器（带自动获取最新稳定版兜底 + 自动清理临时文件）
+          if [ -z "${ZIG_VERSION:-}" ]; then
+              echo "⚠️ 未检测到预设的 ZIG_VERSION，正在自动获取 Zig 最新稳定版..."
+              ZIG_VERSION=$(curl -fsSL https://ziglang.org | jq -r 'keys_unsorted | map(select(. != "master")) | .[0]')
+          fi
+
+          [ -n "$ZIG_VERSION" ] || { echo "❌ 错误：未能获取到有效的 Zig 版本号！"; exit 1; }
           echo "📦 正在安装 Zig v${ZIG_VERSION}..."
-          curl --retry 3 --retry-delay 2 -fsSL -o /tmp/zig.tar.xz "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
+
+          # 兼容 Zig 不同版本的压缩包命名规则（x86_64-linux 或 linux-x86_64）
+          ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
+          if ! curl -fsI "$ZIG_URL" >/dev/null 2>&1; then
+              ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz"
+          fi
+
+          curl --retry 5 --retry-delay 3 -fsSL -o /tmp/zig.tar.xz "$ZIG_URL"
+          sudo rm -rf /usr/local/zig-*
           sudo tar -xJf /tmp/zig.tar.xz -C /usr/local
-          sudo ln -sf "/usr/local/zig-x86_64-linux-${ZIG_VERSION}/zig" /usr/local/bin/zig
+          ZIG_DIR=$(find /usr/local -maxdepth 1 -type d -name "zig-*" | head -n1)
+          sudo ln -sf "${ZIG_DIR}/zig" /usr/local/bin/zig
+          rm -f /tmp/zig.tar.xz
+
+          echo "✅ Zig 安装完成: $(zig version)"
           echo "✅ honk 专用宿主机工具链安装完成！"
         else
           echo "⚠️ 指定目录未检测到 honk_toolchain.sh 脚本，跳过专用工具链安装。"
