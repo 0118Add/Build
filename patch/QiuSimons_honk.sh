@@ -44,20 +44,21 @@
           echo "${BPF_LINKER_SHA256}  /tmp/bpf-linker.tar.zst" | sha256sum -c -
           sudo tar --zstd -xf /tmp/bpf-linker.tar.zst -C /usr/local/bin
           
-          # 安装 Zig 编译器（带自动获取最新稳定版兜底 + 自动清理临时文件）
-          if [ -z "${ZIG_VERSION:-}" ]; then
-              echo "⚠️ 未检测到预设的 ZIG_VERSION，正在自动获取 Zig 最新稳定版..."
-              ZIG_VERSION=$(curl -fsSL https://ziglang.org | jq -r 'keys_unsorted | map(select(. != "master")) | .[0]')
+          # 安装 Zig 编译器（直接读取官方 index.json 真实 tarball 链接，彻底杜绝 404）
+          echo "🔍 正在获取 Zig 最新稳定版真实下载地址..."
+          ZIG_JSON=$(curl -fsSL https://ziglang.org)
+
+          if [ -n "${ZIG_VERSION:-}" ]; then
+              ZIG_URL=$(echo "$ZIG_JSON" | jq -r ".\"${ZIG_VERSION}\".\"x86_64-linux\".tarball // empty")
           fi
 
-          [ -n "$ZIG_VERSION" ] || { echo "❌ 错误：未能获取到有效的 Zig 版本号！"; exit 1; }
-          echo "📦 正在安装 Zig v${ZIG_VERSION}..."
-
-          # 兼容 Zig 不同版本的压缩包命名规则（x86_64-linux 或 linux-x86_64）
-          ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
-          if ! curl -fsI "$ZIG_URL" >/dev/null 2>&1; then
-              ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz"
+          # 如果指定版本未找到，则自动提取最新稳定版（排除 master 开发版）的下载地址
+          if [ -z "${ZIG_URL:-}" ]; then
+              ZIG_URL=$(echo "$ZIG_JSON" | jq -r 'to_entries | map(select(.key != "master")) | .[0].value."x86_64-linux".tarball')
           fi
+
+          [ -n "$ZIG_URL" ] && [ "$ZIG_URL" != "null" ] || { echo "❌ 错误：未能从 Zig 官方索引获取到下载地址！"; exit 1; }
+          echo "📥 正在下载 Zig: $ZIG_URL"
 
           curl --retry 5 --retry-delay 3 -fsSL -o /tmp/zig.tar.xz "$ZIG_URL"
           sudo rm -rf /usr/local/zig-*
