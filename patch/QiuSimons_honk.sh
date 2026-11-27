@@ -45,30 +45,10 @@
           echo "${BPF_LINKER_SHA256}  /tmp/bpf-linker.tar.zst" | sha256sum -c -
           sudo tar --zstd -xf /tmp/bpf-linker.tar.zst -C /usr/local/bin
           
-          # 安装 Zig 编译器（带浏览器 UA 防拦截 + 直接提取官网真实下载链接）
-          echo "🔍 正在获取 Zig 最新版真实下载地址..."
-          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-
-          ZIG_URL=$(curl -fsSL -A "$UA" "https://ziglang.org" | \
-              grep -oE 'https://ziglang\.org/download/[^"]+(x86_64-linux|linux-x86_64)[^"]+\.tar\.xz' | \
-              grep -v 'dev' | head -n1 || true)
-
-          # 兜底：如果只有开发版或页面结构微调，放宽 dev 限制再匹配一次
-          if [ -z "$ZIG_URL" ]; then
-              ZIG_URL=$(curl -fsSL -A "$UA" "https://ziglang.org" | \
-                  grep -oE 'https://ziglang\.org/download/[^"]+(x86_64-linux|linux-x86_64)[^"]+\.tar\.xz' | \
-                  head -n1 || true)
-          fi
-
-          [ -n "$ZIG_URL" ] || { echo "❌ 错误：未能从 Zig 官网获取到下载地址！"; exit 1; }
-          echo "📥 正在下载 Zig: $ZIG_URL"
-
-          curl --retry 5 --retry-delay 3 -fsSL -A "$UA" -o /tmp/zig.tar.xz "$ZIG_URL"
-          sudo rm -rf /usr/local/zig-*
-          sudo tar -xJf /tmp/zig.tar.xz -C /usr/local
-          ZIG_DIR=$(find /usr/local -maxdepth 1 -type d -name "zig-*" | head -n1)
-          sudo ln -sf "${ZIG_DIR}/zig" /usr/local/bin/zig
-          rm -f /tmp/zig.tar.xz
+          # 通过 PyPI 安装官方 Zig 工具链（免抓网页、不受 ziglang.org 拦截）
+          echo "📦 正在通过 PyPI 安装最新版 Zig 编译器..."
+          pip3 install --break-system-packages -U ziglang
+          sudo ln -sf "$(command -v python-zig)" /usr/local/bin/zig
 
           echo "✅ Zig 安装完成: $(zig version)"
           echo "✅ honk 专用宿主机工具链安装完成！"
