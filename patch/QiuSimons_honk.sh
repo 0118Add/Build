@@ -45,23 +45,25 @@
           echo "${BPF_LINKER_SHA256}  /tmp/bpf-linker.tar.zst" | sha256sum -c -
           sudo tar --zstd -xf /tmp/bpf-linker.tar.zst -C /usr/local/bin
           
-          # 安装 Zig 编译器（直接读取官方 index.json 真实 tarball 链接，彻底杜绝 404）
-          echo "🔍 正在获取 Zig 最新稳定版真实下载地址..."
-          ZIG_JSON=$(curl -fsSL https://ziglang.org)
+          # 安装 Zig 编译器（带浏览器 UA 防拦截 + 直接提取官网真实下载链接）
+          echo "🔍 正在获取 Zig 最新版真实下载地址..."
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
-          if [ -n "${ZIG_VERSION:-}" ]; then
-              ZIG_URL=$(echo "$ZIG_JSON" | jq -r ".\"${ZIG_VERSION}\".\"x86_64-linux\".tarball // empty")
+          ZIG_URL=$(curl -fsSL -A "$UA" "https://ziglang.org" | \
+              grep -oE 'https://ziglang\.org/download/[^"]+(x86_64-linux|linux-x86_64)[^"]+\.tar\.xz' | \
+              grep -v 'dev' | head -n1 || true)
+
+          # 兜底：如果只有开发版或页面结构微调，放宽 dev 限制再匹配一次
+          if [ -z "$ZIG_URL" ]; then
+              ZIG_URL=$(curl -fsSL -A "$UA" "https://ziglang.org" | \
+                  grep -oE 'https://ziglang\.org/download/[^"]+(x86_64-linux|linux-x86_64)[^"]+\.tar\.xz' | \
+                  head -n1 || true)
           fi
 
-          # 如果指定版本未找到，则自动提取最新稳定版（排除 master 开发版）的下载地址
-          if [ -z "${ZIG_URL:-}" ]; then
-              ZIG_URL=$(echo "$ZIG_JSON" | jq -r 'to_entries | map(select(.key != "master")) | .[0].value."x86_64-linux".tarball')
-          fi
-
-          [ -n "$ZIG_URL" ] && [ "$ZIG_URL" != "null" ] || { echo "❌ 错误：未能从 Zig 官方索引获取到下载地址！"; exit 1; }
+          [ -n "$ZIG_URL" ] || { echo "❌ 错误：未能从 Zig 官网获取到下载地址！"; exit 1; }
           echo "📥 正在下载 Zig: $ZIG_URL"
 
-          curl --retry 5 --retry-delay 3 -fsSL -o /tmp/zig.tar.xz "$ZIG_URL"
+          curl --retry 5 --retry-delay 3 -fsSL -A "$UA" -o /tmp/zig.tar.xz "$ZIG_URL"
           sudo rm -rf /usr/local/zig-*
           sudo tar -xJf /tmp/zig.tar.xz -C /usr/local
           ZIG_DIR=$(find /usr/local -maxdepth 1 -type d -name "zig-*" | head -n1)
