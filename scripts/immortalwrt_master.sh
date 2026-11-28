@@ -120,8 +120,8 @@ sed -i 's/"admin/"admin\/services/g' feeds/luci/applications/luci-app-dockerman/
 #git clone --depth=1 -b main https://github.com/kenzok8/openwrt-clashoo package/openwrt-clashoo
 # 添加QiuSimons大鹅
 #git clone --depth=1 -b kix https://github.com/QiuSimons/luci-app-dae package/openwrt-dae
-git clone --depth=1 -b master https://github.com/QiuSimons/luci-app-daeuniverse package/openwrt-daeuniverse
-git clone https://github.com/QiuSimons/vmlinux-btf package/vmlinux-btf
+#git clone --depth=1 -b master https://github.com/QiuSimons/luci-app-daeuniverse package/openwrt-daeuniverse
+#git clone https://github.com/QiuSimons/vmlinux-btf package/vmlinux-btf
 # 添加homeproxy
 #git_sparse_clone v5 https://github.com/sbwml/openwrt_helloworld sing-box luci-app-homeproxy
 sed -i "s/ImmortalWrt/OpenWrt/g" feeds/luci/applications/luci-app-homeproxy/po/zh_Hans/homeproxy.po
@@ -226,15 +226,15 @@ curl -fsSL https://raw.githubusercontent.com/immortalwrt/luci/master/modules/luc
 #rm -rf package/all-proxy/mihomo
 #rm -rf package/helloworld/mihomo
 
-# 9. 调用 QiuSimons_honk.sh，并自动清理 Windows 换行符
-BUILD_PATH="$GITHUB_WORKSPACE/patch/QiuSimons_honk.sh"
+# 9. 调用 daeuniverse_honk.sh，并自动清理 Windows 换行符
+BUILD_PATH="$GITHUB_WORKSPACE/patch/daeuniverse_honk.sh"
 if [ -f "$BUILD_PATH" ]; then
-  echo "🧹 正在自动清理 QiuSimons_honk.sh 的 Windows 换行符 (CRLF -> LF)..."
+  echo "🧹 正在自动清理 daeuniverse_honk.sh 的 Windows 换行符 (CRLF -> LF)..."
   sed -i 's/\r$//' "$BUILD_PATH"
   
-  echo "🔑 正在赋予 QiuSimons_honk.sh 执行权限..."
+  echo "🔑 正在赋予 daeuniverse_honk.sh 执行权限..."
   chmod +x "$BUILD_PATH"  # 加上这行更稳妥
   
-  echo "🚀 正在执行 QiuSimons_honk.sh..."
+  echo "🚀 正在执行 daeuniverse_honk.sh..."
   bash "$BUILD_PATH"
 fi
